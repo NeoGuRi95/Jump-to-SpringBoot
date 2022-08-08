@@ -80,19 +80,15 @@ public class MainController {
         return result;
     }
 
-    @GetMapping("mbti")
+    @GetMapping("/mbti/{name}")
     @ResponseBody
-    public String showMbti(String name) {
-        switch (name) {
-            case "홍길동":
-                return "INFP";
-            case "홍길순":
-                return "ENFP";
-            case "임꺽정":
-                return "INFJ";
-            default:
-                return "????";
-        }
+    public String showMbti(@PathVariable String name) {
+        String rs = switch (name) {
+            case "홍길동" -> "INFP";
+            case "홍길순" -> "ENFP";
+            default -> "모름";
+        };
+        return rs;
     }
 
     @GetMapping("/plus2")
@@ -102,5 +98,11 @@ public class MainController {
         int b = Integer.parseInt(req.getParameter("b"));
 
         resp.getWriter().append(a + b + "");
+    }
+
+    @PostMapping("/saveSessionAge")
+    @ResponseBody
+    public void saveAge(int age) {
+
     }
 }

@@ -61,4 +61,33 @@ public class MainController {
         ++increaseCnt;
         return increaseCnt;
     }
+
+    @GetMapping("/gugudan")
+    @ResponseBody
+    public String showGugudan(int dan, int limit) {
+        String result = "";
+        int i = 1;
+
+        while (i <= limit) {
+            result += "<h3>" + dan + " * " + i + " = " + (dan * i) + "</h3>";
+            i++;
+        }
+
+        return result;
+    }
+
+    @GetMapping("mbti")
+    @ResponseBody
+    public String showMbti(String name) {
+        switch (name) {
+            case "홍길동":
+                return "INFP";
+            case "홍길순":
+                return "ENFP";
+            case "임꺽정":
+                return "INFJ";
+            default:
+                return "????";
+        }
+    }
 }

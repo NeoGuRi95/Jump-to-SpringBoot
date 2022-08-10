@@ -1,11 +1,17 @@
 package com.ll.exam.sbb;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class MainController {
@@ -18,7 +24,7 @@ public class MainController {
         return "hello :)";
     }
 
-    @GetMapping("/page1")
+    @GetMapping("page1")
     @ResponseBody
     public String showPage1() {
         return """
@@ -29,7 +35,7 @@ public class MainController {
                 """;
     }
 
-    @PostMapping("/page2")
+    @PostMapping("page2")
     @ResponseBody
     public String showPage2Post(@RequestParam(defaultValue = "0") int age) {
         return """
@@ -38,7 +44,7 @@ public class MainController {
                 """.formatted(age);
     }
 
-    @GetMapping("/page2")
+    @GetMapping("page2")
     @ResponseBody
     public String showPage2Get(@RequestParam(defaultValue = "0") int age) {
         return """
@@ -47,26 +53,26 @@ public class MainController {
                 """.formatted(age);
     }
 
-    @GetMapping("/plus")
+    @GetMapping("plus")
     @ResponseBody
     public int showPlus(@RequestParam(defaultValue = "0") int a, @RequestParam(defaultValue = "0") int b) {
         return a + b;
     }
 
-    @GetMapping("/minus")
+    @GetMapping("minus")
     @ResponseBody
     public int showMinus(@RequestParam(defaultValue = "0") int a, @RequestParam(defaultValue = "0") int b) {
         return a - b;
     }
 
-    @GetMapping("/increase")
+    @GetMapping("increase")
     @ResponseBody
     public int showIncrease() {
         ++increaseCnt;
         return increaseCnt;
     }
 
-    @GetMapping("/gugudan")
+    @GetMapping("gugudan")
     @ResponseBody
     public String showGugudan(int dan, int limit) {
         String result = "";
@@ -80,18 +86,18 @@ public class MainController {
         return result;
     }
 
-    @GetMapping("/mbti/{name}")
+    @GetMapping("mbti/{name}")
     @ResponseBody
     public String showMbti(@PathVariable String name) {
         String rs = switch (name) {
             case "홍길동" -> "INFP";
-            case "홍길순" -> "ENFP";
+            case "홍길순", "임꺽정" -> "ENFP";
             default -> "모름";
         };
         return rs;
     }
 
-    @GetMapping("/plus2")
+    @GetMapping("plus2")
     @ResponseBody
     public void showPlus2(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         int a = Integer.parseInt(req.getParameter("a"));
@@ -100,9 +106,95 @@ public class MainController {
         resp.getWriter().append(a + b + "");
     }
 
-    @PostMapping("/saveSessionAge")
+    @GetMapping("saveSession/{name}/{value}")
     @ResponseBody
-    public void saveAge(int age) {
+    public String saveSession(@PathVariable String name, @PathVariable String value, HttpServletRequest req) {
+        HttpSession session = req.getSession();
 
+        session.setAttribute(name, value);
+
+        return "세션변수 %s의 값이 %s(으)로 설정되었습니다.".formatted(name, value);
+    }
+
+    @GetMapping("getSession/{name}")
+    @ResponseBody
+    public String getSession(@PathVariable String name, HttpSession session) {
+        String value = (String) session.getAttribute(name);
+
+        return "세션변수 %s의 값이 %s 입니다.".formatted(name, value);
+    }
+
+    private List<Article> articles = new ArrayList<>();
+
+    @GetMapping("addArticle")
+    @ResponseBody
+    public String addArticle(String title, String body) {
+        Article article = new Article(title, body);
+
+        articles.add(article);
+
+        return "%d번 게시물이 생성되었습니다.".formatted(article.getId());
+    }
+
+    @GetMapping("article/{id}")
+    @ResponseBody
+    public Article getArticle(@PathVariable int id) {
+        Article article = articles
+                .stream()
+                .filter(a -> a.getId() == id) // 1번
+                .findFirst()
+                .orElse(null);
+
+        return article;
+    }
+
+    @GetMapping("modifyArticle")
+    @ResponseBody
+    public String modifyArticle(int id, String title, String body) {
+        Article article = articles
+                .stream()
+                .filter(a -> a.getId() == id) // 1번
+                .findFirst()
+                .orElse(null);
+        article.setTitle(title);
+        article.setBody(body);
+
+        if (article == null) {
+            return "%d번 게시물은 존재하지 않습니다.".formatted(id);
+        }
+
+        return "%d번 게시물이 수정되었습니다.".formatted(id);
+    }
+
+    @GetMapping("/deleteArticle/{id}")
+    @ResponseBody
+    public String deleteArticle(@PathVariable int id) {
+        Article article = articles
+                .stream()
+                .filter(a -> a.getId() == id) // 1번
+                .findFirst()
+                .orElse(null);
+
+        if (article == null) {
+            return "%d번 게시물은 존재하지 않습니다.".formatted(id);
+        }
+
+        articles.remove(article);
+
+        return "%d번 게시물을 삭제하였습니다.".formatted(article.getId());
+    }
+}
+
+@AllArgsConstructor
+@Getter
+@Setter
+class Article {
+    private static int lastId = 0;
+    private final int id;
+    private String title;
+    private String body;
+
+    public Article(String title, String body) {
+        this(++lastId, title, body);
     }
 }

@@ -2,6 +2,7 @@ package com.ll.exam.sbb.user;
 
 import com.ll.exam.sbb.DataNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,15 @@ public class UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        this.userRepository.save(user);
+        try {
+            this.userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            if (userRepository.existsByUsername(username)) {
+                throw new SignupUsernameDuplicateException("이미 등록된 아이디입니다.");
+            } else {
+                throw new SignupEmailDuplicateException("이미 등록된 이메일입니다.");
+            }
+        }
         return user;
     }
 

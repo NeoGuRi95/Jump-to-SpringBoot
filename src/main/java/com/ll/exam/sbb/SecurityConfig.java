@@ -28,8 +28,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/**").permitAll()
                 .and()
-                    .formLogin()
-                    .loginPage("/user/login")
+                    .formLogin() // 로그인 폼을 내가 직접 구현하겠다
+                    .loginPage("/user/login") // 그 로그인 폼은 해당 경로로 가면 된다.
                     .defaultSuccessUrl("/")
                 .and()
                     .logout()
